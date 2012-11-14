@@ -312,3 +312,5 @@ section "The Concurrency Model" do
 end
 
 section "The End" do; end
+
+slide `jp2a --clear --width=50 --colors --term-fit --invert wooga.jpg` do; end
