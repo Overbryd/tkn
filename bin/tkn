@@ -70,12 +70,14 @@ end
 
 # Returns a string that the caller has to print as is to get the slide
 # properly rendered. The caller is responsible for clearing the screen.
+# Each char will be yielded after a configurable sleep time.
 def render(slide)
   if slide[0] =~ /\S/
     result = send("render_#{slide[1]}", slide[0])
+    sleep_time = (slide[2] ? slide[2].to_f : 0.5) / result.length
     result.each_char do |c|
       yield c
-      sleep slide[2] || 0.002 # old-school touch: running cursor
+      sleep sleep_time
     end
   end
 end
@@ -128,6 +130,19 @@ def render_block(content)
   end
 end
 
+# Allows for reading multiple characters when combined with a loop
+# Returns true if a commmand could be read within the given wait_time.
+# Otherwise false and catches the Timeout::Error
+# Any results from read_command must be processed in a block.
+def try_read_command(wait_time = 0.3)
+  timeout wait_time do
+    yield read_command if block_given?
+    true
+  end
+rescue Timeout::Error
+  false
+end
+
 
 #
 # --- Main Loop -------------------------------------------------------
@@ -168,30 +183,29 @@ loop do
   end
 
   case read_command
+  # next slide
   when ' ', 'n', 'l', 'k', "\e[5~"
     n += 1
+  # previous slide
   when 'b', 'p', 'h', 'j', "\e[6~"
     n -= 1
+  # jump to start
   when '^'
     n = 0
+  # jump to end
   when '$'
     n = $slides.length - 1
+  # quit
   when 'q'
     print clear_screen
     exit
+  # jump to a slide by number
+  # provides a small timeout to type a sequence of numbers
   when /^(\d+)$/
     n = $1.to_i
-    started = Time.now
-    wait_time = 0.3
     loop do
-      begin
-        timeout wait_time do
-          if read_command =~ /^(\d+)$/
-            n = "#{n}#{$1}".to_i
-          end
-        end
-      rescue Timeout::Error
-        break
+      break unless try_read_command do |cmd|
+        n = "#{n}#{$1}".to_i if cmd =~ /^(\d+)$/
       end
     end
   end
