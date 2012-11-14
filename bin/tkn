@@ -10,8 +10,8 @@ require 'pygments'
 # --- DSL -------------------------------------------------------------
 #
 
-def slide(content, format=:block)
-  $slides << [content.strip_heredoc, format]
+def slide(content, format=:block, speed=nil)
+  $slides << [content.strip_heredoc, format, speed]
 end
 
 def section(content)
@@ -71,7 +71,13 @@ end
 # Returns a string that the caller has to print as is to get the slide
 # properly rendered. The caller is responsible for clearing the screen.
 def render(slide)
-  send("render_#{slide[1]}", slide[0]) if slide[0] =~ /\S/
+  if slide[0] =~ /\S/
+    result = send("render_#{slide[1]}", slide[0])
+    result.each_char do |c|
+      yield c
+      sleep slide[2] || 0.002 # old-school touch: running cursor
+    end
+  end
 end
 
 # Renders the content by centering each individual line.
@@ -85,7 +91,7 @@ def render_center(content)
       col = [1, 1 + (ncols - ansi_length(line.chomp))/2].max
       str << cursor_at(row + i, col) + line
     end
-  end  
+  end
 end
 
 # Renders a section banner.
@@ -113,10 +119,10 @@ def render_block(content)
 
   nlines = content.count("\n")
   row = [1, 1 + (nrows - nlines)/2].max
-  
+
   width = width(content)
   col = [1, 1 + (ncols - width)/2].max
-  
+
   content.gsub(/^/) do
     cursor_at(row, col).tap { row += 1 }
   end
@@ -157,9 +163,8 @@ loop do
   end
 
   n = [[0, n].max, $slides.length - 1].min
-  render($slides[n]).each_char do |c|
+  render($slides[n]) do |c|
     print c
-    sleep 0.002 # old-school touch: running cursor
   end
 
   case read_command
@@ -174,5 +179,20 @@ loop do
   when 'q'
     print clear_screen
     exit
+  when /^(\d+)$/
+    n = $1.to_i
+    started = Time.now
+    wait_time = 0.3
+    loop do
+      begin
+        timeout wait_time do
+          if read_command =~ /^(\d+)$/
+            n = "#{n}#{$1}".to_i
+          end
+        end
+      rescue Timeout::Error
+        break
+      end
+    end
   end
 end
