@@ -73,7 +73,9 @@ section "Requirements of our Game" do
 
   # Zero downtime deployments
   slide <<-EOS, :center
-  
+    \e[1mDeployment\e[0m
+
+    No service interruption during weekly releases.
   EOS
 
   # Good Night's Sleep is kind of a weird requirement.
@@ -689,7 +691,7 @@ section "Wrapping up" do
 
   slide <<-EOS, :center
     How can you achieve
-    
+
     \e[1mconcurrency\e[0m, \e[1mproductivity\e[0m and \e[1msimplicity\e[0m
 
     with the tools \e[1myou know\e[0m today?
