@@ -4,6 +4,13 @@ require "rubygems"
 require "io/console"
 require "active_support/core_ext/string/strip"
 require "pygments"
+require "rainbow"
+
+class String
+  def rainbowify
+    split("").map { |c| c.color(rand(25), rand(25), rand(25))}.join("")
+  end
+end
 
 class Tkn
 

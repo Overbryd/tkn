@@ -10,6 +10,7 @@ GEM
     pygments.rb (0.3.2)
       posix-spawn (~> 0.3.6)
       yajl-ruby (~> 1.1.0)
+    rainbow (1.1.4)
     yajl-ruby (1.1.0)
 
 PLATFORMS
@@ -19,3 +20,4 @@ PLATFORMS
 DEPENDENCIES
   activesupport (~> 3.2)
   pygments.rb (~> 0.2)
+  rainbow
