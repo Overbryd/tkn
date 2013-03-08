@@ -21,6 +21,8 @@ class Tkn
     @deck   = ARGV[0]
     @mtime  = nil
     @slides = []
+    @default_slide_time = 0.5
+    @default_format = :block
   end
 
   def run
@@ -47,7 +49,7 @@ class Tkn
   # --- DSL -------------------------------------------------------------
   #
 
-  def slide(content, format=:block, speed=nil)
+  def slide(content, format=@default_format, speed=nil)
     @slides << [content.strip_heredoc, format, speed]
   end
 
@@ -110,7 +112,7 @@ class Tkn
   # Each char will be yielded after a configurable sleep time.
   def render(slide)
     result = render_out(slide)
-    sleep_time = (slide[2] ? slide[2].to_f : 0.5) / result.length
+    sleep_time = (slide[2] ? slide[2].to_f : @default_slide_time) / result.length
     result.each_char do |c|
       yield c
       sleep sleep_time
